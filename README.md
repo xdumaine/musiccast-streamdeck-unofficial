@@ -29,7 +29,7 @@ Unofficial [Elgato Stream Deck](https://www.elgato.com/stream-deck) plugin for *
 
    Requires the [Stream Deck CLI](https://docs.elgato.com/streamdeck/cli/intro) (`@elgato/cli`).
 
-4. Add actions from the **musiccast-unofficial** category and set your device **IP** in each action’s settings.
+4. Add actions from the **musiccast-unofficial** category and set your device **IP** in any action’s settings. Device IP, zone, and shared colors apply across all actions.
 
 For iterative work, run `npm run watch` to rebuild and restart the plugin on save.
 
@@ -38,7 +38,8 @@ For iterative work, run `npm run watch` to rebuild and restart the plugin on sav
 | Action                                         | Control                                                                     |
 | ---------------------------------------------- | --------------------------------------------------------------------------- |
 | **Volume** (dial)                              | Rotate: volume steps · Push: mute · **Double-push**: power · Touch: refresh |
-| **Source**                                     | Cycle configured inputs via `setInput`; icon reflects `getStatus.input`     |
+| **Source Dial**                                | Rotate through configured inputs via `setInput`; push/touch refreshes       |
+| **Source**                                     | Key action that cycles configured inputs; icon reflects `getStatus.input`   |
 | **Play / Play-Pause / Stop / Previous / Next** | `netusb/setPlayback`; Play-Pause reads `netusb/getPlayInfo` first           |
 | **Mute**                                       | Toggle `setMute`                                                            |
 | **Power**                                      | `setPower?power=toggle`                                                     |
@@ -48,7 +49,7 @@ For iterative work, run `npm run watch` to rebuild and restart the plugin on sav
 - **Display**: numeric level or **0–100% bar**
 - **Show device IP** on the subtitle line
 - **Background refresh** (default 10s)—slow polling when idle; rotation, mute, and power update the strip **immediately**
-- **Colors**: level, muted, number text, subtitle, error, bar track
+- **Shared colors**: primary/accent, muted, text, subtitle, error, bar track
 
 ## API reference
 

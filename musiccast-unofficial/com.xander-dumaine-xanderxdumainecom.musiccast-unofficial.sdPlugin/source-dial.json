@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "source-dial",
+	"items": [
+		{
+			"key": "icon",
+			"type": "pixmap",
+			"rect": [6, 18, 60, 60],
+			"value": "",
+			"zOrder": 1
+		},
+		{
+			"key": "source",
+			"type": "text",
+			"rect": [72, 22, 120, 38],
+			"font": { "size": 22, "weight": 700 },
+			"alignment": "left",
+			"color": "#FFFFFF"
+		},
+		{
+			"key": "sub",
+			"type": "text",
+			"rect": [74, 62, 118, 16],
+			"font": { "size": 8, "weight": 500 },
+			"alignment": "left",
+			"color": "#8E8E93"
+		}
+	]
+}

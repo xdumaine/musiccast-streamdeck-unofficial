@@ -9,10 +9,10 @@
 
 <body>
 	<sdpi-item label="Device IP / host">
-		<sdpi-textfield setting="host" placeholder="192.168.1.42" required></sdpi-textfield>
+		<sdpi-textfield setting="host" placeholder="192.168.1.42" required global></sdpi-textfield>
 	</sdpi-item>
 	<sdpi-item label="Zone (optional)">
-		<sdpi-textfield setting="zone" placeholder="main" default="main"></sdpi-textfield>
+		<sdpi-textfield setting="zone" placeholder="main" default="main" global></sdpi-textfield>
 	</sdpi-item>
 	<sdpi-item label="Display">
 		<sdpi-select setting="displayMode" default="number">
@@ -40,24 +40,24 @@
 	</sdpi-item>
 	<sdpi-item label="">
 		<details>
-			<summary>Colors</summary>
-			<sdpi-item label="Level / bar fill">
-				<sdpi-color setting="colors.level" default="#5AC8FA"></sdpi-color>
+			<summary>Shared colors</summary>
+			<sdpi-item label="Primary / accent">
+				<sdpi-color setting="colors.level" default="#5AC8FA" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Muted">
-				<sdpi-color setting="colors.muted" default="#FF9F0A"></sdpi-color>
+				<sdpi-color setting="colors.muted" default="#FF9F0A" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Number text">
-				<sdpi-color setting="colors.number" default="#FFFFFF"></sdpi-color>
+				<sdpi-color setting="colors.number" default="#FFFFFF" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Subtitle">
-				<sdpi-color setting="colors.subtitle" default="#8E8E93"></sdpi-color>
+				<sdpi-color setting="colors.subtitle" default="#8E8E93" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Error / warning">
-				<sdpi-color setting="colors.error" default="#FF453A"></sdpi-color>
+				<sdpi-color setting="colors.error" default="#FF453A" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Bar track (empty)">
-				<sdpi-textfield setting="colors.barTrack" placeholder="transparent or #3A3A3C" default="transparent"></sdpi-textfield>
+				<sdpi-textfield setting="colors.barTrack" placeholder="transparent or #3A3A3C" default="transparent" global></sdpi-textfield>
 			</sdpi-item>
 		</details>
 	</sdpi-item>
@@ -72,7 +72,8 @@
 				<strong>Squiggle bar</strong> draws a static wavy fill instead of a solid fill.
 				In squiggle mode, <strong>thickness</strong> controls line weight while <strong>amplitude</strong>
 				can use the full bar slot height; use <strong>wavelength</strong> for spacing.
-				Expand <strong>Colors</strong> to customize the touch strip palette.
+				Device IP, zone, and shared colors apply across all MusicCast actions.
+				Expand <strong>Shared colors</strong> to customize the touch strip palette.
 				Background refresh is slow by design; dial rotation, mute, and power update the display immediately.
 			</p>
 		</details>

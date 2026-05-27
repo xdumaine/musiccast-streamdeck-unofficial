@@ -20,6 +20,7 @@ import {
   type MusicCastDeviceSettings,
   volumeDialLayoutFile,
 } from "../musiccast/settings.js";
+import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 import {
   buildErrorFeedback,
   buildUnconfiguredFeedback,
@@ -59,6 +60,7 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
   private readonly maxVolumeByAction = new Map<string, number>();
   private readonly lastFetchEndMs = new Map<string, number>();
   private readonly settingsCache = new MusicCastSettingsCache();
+	private readonly activeDials = new Map<string, DialAction<MusicCastDeviceSettings>>();
   private readonly statusCache = new Map<string, CachedStatus>();
   private readonly pendingImmediate = new Set<string>();
   private readonly syncDebounce = new Map<
@@ -76,12 +78,18 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
     string,
     ReturnType<typeof setTimeout>
   >();
+	private readonly unsubscribeShared = onSharedSettingsChanged(() => {
+		for (const dial of this.activeDials.values()) {
+			this.paintFromCache(dial, this.settingsCache.get(dial.id));
+		}
+	});
 
   override async onWillAppear(
     ev: WillAppearEvent<MusicCastDeviceSettings>
   ): Promise<void> {
     if (!ev.action.isDial()) return;
     const dial = ev.action;
+		this.activeDials.set(dial.id, dial);
     const settings = this.settingsCache.merge(dial.id, ev.payload.settings);
     await this.applyLayout(dial, settings);
     await dial.setTriggerDescription({
@@ -110,6 +118,7 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
     this.layoutByAction.delete(id);
     this.statusCache.delete(id);
     this.pendingImmediate.delete(id);
+		this.activeDials.delete(id);
   }
 
   override onDidReceiveSettings(

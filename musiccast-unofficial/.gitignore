@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# Compiled plugin bundle
+*.sdPlugin/bin/
+
+# Stream Deck runtime logs
+*.sdPlugin/logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.idea/
+
+# Local secrets / overrides
+.env
+.env.*
+
+# Large vendor PDFs
+*.pdf

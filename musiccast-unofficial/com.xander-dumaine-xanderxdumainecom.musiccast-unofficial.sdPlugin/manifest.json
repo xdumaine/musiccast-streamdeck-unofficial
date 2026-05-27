@@ -27,6 +27,29 @@
       ]
     },
     {
+      "Name": "Source Dial",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.source-dial",
+      "Icon": "imgs/actions/source/icon",
+      "Tooltip": "Turn to select previous/next MusicCast source; touch or push to refresh.",
+      "PropertyInspectorPath": "ui/source-toggle.html",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "source-dial.json",
+        "TriggerDescription": {
+          "Rotate": "Previous / next source",
+          "Touch": "Refresh source",
+          "Push": "Refresh source",
+          "LongTouch": "Refresh source"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/source/key",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
       "Name": "Source",
       "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.source-toggle",
       "Icon": "imgs/actions/source/icon",

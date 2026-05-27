@@ -8,6 +8,7 @@ const UUID_PREFIX = "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial";
 @action({ UUID: `${UUID_PREFIX}.play` })
 export class PlayKey extends MusicCastKeyAction {
   protected override label = "Play";
+  protected override icon = "play" as const;
 
   protected override run(client: MusicCastClient): Promise<void> {
     return client.setNetPlayback("play").then(() => undefined);
@@ -17,6 +18,7 @@ export class PlayKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.play-pause-toggle` })
 export class PlayPauseToggleKey extends MusicCastKeyAction {
   protected override label = "Play/Pause";
+  protected override icon = "play-pause" as const;
 
   protected override async run(client: MusicCastClient): Promise<void> {
     const info = await client.getNetPlayInfo();
@@ -28,6 +30,7 @@ export class PlayPauseToggleKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.stop` })
 export class StopKey extends MusicCastKeyAction {
   protected override label = "Stop";
+  protected override icon = "stop" as const;
 
   protected override run(client: MusicCastClient): Promise<void> {
     return client.setNetPlayback("stop").then(() => undefined);
@@ -37,6 +40,7 @@ export class StopKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.previous` })
 export class PreviousKey extends MusicCastKeyAction {
   protected override label = "Prev";
+  protected override icon = "previous" as const;
 
   protected override run(client: MusicCastClient): Promise<void> {
     return client.setNetPlayback("previous").then(() => undefined);
@@ -46,6 +50,7 @@ export class PreviousKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.next` })
 export class NextKey extends MusicCastKeyAction {
   protected override label = "Next";
+  protected override icon = "next" as const;
 
   protected override run(client: MusicCastClient): Promise<void> {
     return client.setNetPlayback("next").then(() => undefined);
@@ -55,6 +60,7 @@ export class NextKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.mute-toggle` })
 export class MuteToggleKey extends MusicCastKeyAction {
   protected override label = "Mute";
+  protected override icon = "mute" as const;
 
   protected override async run(client: MusicCastClient): Promise<void> {
     const status = await client.getZoneStatus();
@@ -66,6 +72,7 @@ export class MuteToggleKey extends MusicCastKeyAction {
 @action({ UUID: `${UUID_PREFIX}.power-toggle` })
 export class PowerToggleKey extends MusicCastKeyAction {
   protected override label = "Power";
+  protected override icon = "power" as const;
 
   protected override run(client: MusicCastClient): Promise<void> {
     return client.setPower("toggle").then(() => undefined);

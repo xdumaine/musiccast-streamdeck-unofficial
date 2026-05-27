@@ -55,6 +55,16 @@ export const DEFAULT_ZONE = "main";
 export const DEFAULT_POLL_SECONDS = 10;
 export const MIN_POLL_SECONDS = 5;
 export const MAX_POLL_SECONDS = 120;
+export const DEFAULT_SOURCE_CYCLE =
+  "phono,airplay,bluetooth,net_radio,spotify,server";
+
+export function sourceCycle(settings: MusicCastDeviceSettings): string[] {
+  const raw = (settings.sourceCycle ?? DEFAULT_SOURCE_CYCLE).trim();
+  return raw
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
 
 export function normalizeHost(raw: string | undefined): string | null {
   const trimmed = (raw ?? "").trim();

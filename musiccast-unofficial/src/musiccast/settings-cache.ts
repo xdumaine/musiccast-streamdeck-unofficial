@@ -1,11 +1,15 @@
 import { normalizeHost, type MusicCastDeviceSettings } from "./settings.js";
+import {
+  saveSharedSettingsFromActionSettings,
+  withSharedSettings,
+} from "./shared-settings.js";
 
 /** Merges Stream Deck settings from events and getSettings into a per-action cache. */
 export class MusicCastSettingsCache {
   private readonly byAction = new Map<string, MusicCastDeviceSettings>();
 
   get(actionId: string): MusicCastDeviceSettings {
-    return this.byAction.get(actionId) ?? {};
+    return withSharedSettings(this.byAction.get(actionId) ?? {});
   }
 
   merge(
@@ -13,10 +17,11 @@ export class MusicCastSettingsCache {
     partial: MusicCastDeviceSettings | undefined
   ): MusicCastDeviceSettings {
     if (!partial) return this.get(actionId);
+    saveSharedSettingsFromActionSettings(partial);
     const prev = this.byAction.get(actionId) ?? {};
     const next = { ...prev, ...partial };
     this.byAction.set(actionId, next);
-    return next;
+    return this.get(actionId);
   }
 
   delete(actionId: string): void {
