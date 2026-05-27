@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72">
+  <rect width="72" height="72" rx="13" fill="#1C1C1E" />
+  <path fill="none" stroke="#5AC8FA" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+    d="M23 26h19c5 0 9 4 9 9v1" />
+  <path fill="#5AC8FA" d="M47 29l8 7-8 7v-14z" />
+  <path fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+    d="M49 46H30c-5 0-9-4-9-9v-1" />
+  <path fill="#FFFFFF" d="M25 43l-8-7 8-7v14z" />
+  <text x="36" y="62" text-anchor="middle"
+    font-family="-apple-system,BlinkMacSystemFont,Segoe UI,sans-serif" font-size="9"
+    font-weight="700" fill="#8E8E93">SRC</text>
+</svg>

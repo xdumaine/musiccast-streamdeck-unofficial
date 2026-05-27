@@ -1,0 +1,22 @@
+# Yamaha MusicCast HTTP API (excerpt for this plugin)
+
+Full specification: *Yamaha MusicCast HTTP simplified API for Control Systems* (Yamaha).
+Community listing: https://github.com/honnel/yamaha-commands
+
+All requests: `http://<device-ip>/YamahaExtendedControl/v1/...` on port 80.
+
+## Used by musiccast-unofficial
+
+| Purpose | Endpoint |
+|---------|----------|
+| Zone status (volume, mute, power) | `GET /main/getStatus` |
+| Max volume (optional) | `GET /system/getFeatures` |
+| Volume step | `GET /main/setVolume?volume=up\|down&step=N` |
+| Volume absolute | `GET /main/setVolume?volume=N` |
+| Input/source change | `GET /main/setInput?input=phono` |
+| Mute | `GET /main/setMute?enable=true\|false` |
+| Power | `GET /main/setPower?power=on\|standby\|toggle` |
+| Play / pause / stop / skip | `GET /netusb/setPlayback?playback=play\|pause\|stop\|previous\|next` |
+| Net/USB play status | `GET /netusb/getPlayInfo` |
+
+Replace `main` with your zone name from `system/getLocationInfo` when needed.

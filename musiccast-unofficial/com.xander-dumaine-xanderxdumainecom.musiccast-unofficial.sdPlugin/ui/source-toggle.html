@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+	<title>MusicCast source</title>
+	<meta charset="utf-8" />
+	<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+</head>
+
+<body>
+	<sdpi-item label="Device IP / host">
+		<sdpi-textfield setting="host" placeholder="192.168.1.42"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="Zone (optional)">
+		<sdpi-textfield setting="zone" placeholder="main" default="main"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="Source cycle">
+		<sdpi-textfield setting="sourceCycle" placeholder="phono,airplay,bluetooth,net_radio,spotify,server" default="phono,airplay,bluetooth,net_radio,spotify,server"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="">
+		<details>
+			<summary>Help</summary>
+			<p style="font-size:12px;opacity:0.9;margin-top:8px;">
+				Press to cycle through comma-separated MusicCast input IDs using <code>setInput</code>.
+				The button icon updates from <code>getStatus.input</code>. Common IDs include
+				<code>phono</code>, <code>airplay</code>, <code>bluetooth</code>, <code>net_radio</code>,
+				<code>spotify</code>, <code>server</code>, and <code>usb</code>. Supported inputs vary by device.
+			</p>
+		</details>
+	</sdpi-item>
+</body>
+
+</html>

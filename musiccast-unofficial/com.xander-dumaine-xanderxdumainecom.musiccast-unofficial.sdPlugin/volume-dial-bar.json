@@ -1,0 +1,29 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "volume-dial-bar",
+	"items": [
+		{
+			"key": "level",
+			"type": "pixmap",
+			"rect": [8, 38, 184, 28],
+			"value": "",
+			"zOrder": 1
+		},
+		{
+			"key": "sub",
+			"type": "text",
+			"rect": [26, 70, 170, 18],
+			"font": { "size": 8, "weight": 500 },
+			"alignment": "left",
+			"color": "#8E8E93",
+			"zOrder": 0
+		},
+		{
+			"key": "power",
+			"type": "pixmap",
+			"rect": [4, 70, 18, 18],
+			"value": "",
+			"zOrder": 2
+		}
+	]
+}

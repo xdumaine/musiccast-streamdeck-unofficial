@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+	<title>MusicCast device</title>
+	<meta charset="utf-8" />
+	<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+</head>
+
+<body>
+	<sdpi-item label="Device IP / host">
+		<sdpi-textfield setting="host" placeholder="192.168.1.42"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="Zone (optional)">
+		<sdpi-textfield setting="zone" placeholder="main" default="main"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="">
+		<details>
+			<summary>Help</summary>
+			<p style="font-size:12px;opacity:0.9;margin-top:8px;">
+				Use the fixed LAN address of your MusicCast device (port 80).
+				API base: <code>http://&lt;host&gt;/YamahaExtendedControl/v1/…</code>.
+				Zone is usually <strong>main</strong>; use <code>system/getLocationInfo</code> for multi-zone amps.
+				<strong>Note:</strong> Play, play/pause, stop, previous, and next send MusicCast <code>netusb/setPlayback</code>
+				commands. They work for network/USB/streaming sources, but they cannot start or stop a
+				physical turntable/phono input.
+			</p>
+		</details>
+	</sdpi-item>
+</body>
+
+</html>

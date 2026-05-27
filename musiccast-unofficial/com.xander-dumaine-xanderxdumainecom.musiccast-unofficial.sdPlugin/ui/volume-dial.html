@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+	<title>MusicCast volume</title>
+	<meta charset="utf-8" />
+	<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
+</head>
+
+<body>
+	<sdpi-item label="Device IP / host">
+		<sdpi-textfield setting="host" placeholder="192.168.1.42" required></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="Zone (optional)">
+		<sdpi-textfield setting="zone" placeholder="main" default="main"></sdpi-textfield>
+	</sdpi-item>
+	<sdpi-item label="Display">
+		<sdpi-select setting="displayMode" default="number">
+			<option value="number">Volume number</option>
+			<option value="bar">Level bar (0–100%)</option>
+		</sdpi-select>
+	</sdpi-item>
+	<sdpi-item label="Show device IP">
+		<sdpi-checkbox setting="showHost" default="true"></sdpi-checkbox>
+	</sdpi-item>
+	<sdpi-item label="Bar / line thickness (px)">
+		<sdpi-range setting="barThickness" min="4" max="28" step="1" default="10" showlabels></sdpi-range>
+	</sdpi-item>
+	<sdpi-item label="Squiggle bar">
+		<sdpi-checkbox setting="experimentalAnimatedBar" default="true"></sdpi-checkbox>
+	</sdpi-item>
+	<sdpi-item label="Squiggle amplitude (px)">
+		<sdpi-range setting="squiggleAmplitude" min="0.5" max="12" step="0.5" default="2.2" showlabels></sdpi-range>
+	</sdpi-item>
+	<sdpi-item label="Squiggle wavelength (px)">
+		<sdpi-range setting="squiggleWavelength" min="8" max="56" step="2" default="24" showlabels></sdpi-range>
+	</sdpi-item>
+	<sdpi-item label="Background refresh (seconds)">
+		<sdpi-range setting="pollSeconds" min="5" max="120" step="5" default="10" showlabels></sdpi-range>
+	</sdpi-item>
+	<sdpi-item label="">
+		<details>
+			<summary>Colors</summary>
+			<sdpi-item label="Level / bar fill">
+				<sdpi-color setting="colors.level" default="#5AC8FA"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Muted">
+				<sdpi-color setting="colors.muted" default="#FF9F0A"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Number text">
+				<sdpi-color setting="colors.number" default="#FFFFFF"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Subtitle">
+				<sdpi-color setting="colors.subtitle" default="#8E8E93"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Error / warning">
+				<sdpi-color setting="colors.error" default="#FF453A"></sdpi-color>
+			</sdpi-item>
+			<sdpi-item label="Bar track (empty)">
+				<sdpi-textfield setting="colors.barTrack" placeholder="transparent or #3A3A3C" default="transparent"></sdpi-textfield>
+			</sdpi-item>
+		</details>
+	</sdpi-item>
+	<sdpi-item label="">
+		<details>
+			<summary>Help</summary>
+			<p style="font-size:12px;opacity:0.9;margin-top:8px;">
+				<strong>Rotate</strong> adjusts volume. <strong>Push</strong> toggles mute;
+				<strong>double-push</strong> toggles power.
+				Choose <strong>Level bar</strong> for a rounded 0–100% strip (4px corner radius).
+				Adjust <strong>Bar thickness</strong> when using bar display.
+				<strong>Squiggle bar</strong> draws a static wavy fill instead of a solid fill.
+				In squiggle mode, <strong>thickness</strong> controls line weight while <strong>amplitude</strong>
+				can use the full bar slot height; use <strong>wavelength</strong> for spacing.
+				Expand <strong>Colors</strong> to customize the touch strip palette.
+				Background refresh is slow by design; dial rotation, mute, and power update the display immediately.
+			</p>
+		</details>
+	</sdpi-item>
+</body>
+
+</html>

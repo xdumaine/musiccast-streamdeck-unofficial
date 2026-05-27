@@ -1,0 +1,166 @@
+{
+  "Name": "musiccast-unofficial",
+  "Version": "0.1.0.0",
+  "Author": "xander dumaine (xander@xdumaine.com)",
+  "Actions": [
+    {
+      "Name": "Volume",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.volume",
+      "Icon": "imgs/actions/volume/dial",
+      "Tooltip": "Turn for volume; push for mute; double-push for power; touch strip to refresh.",
+      "PropertyInspectorPath": "ui/volume-dial.html",
+      "Controllers": ["Encoder"],
+      "Encoder": {
+        "layout": "volume-dial.json",
+        "TriggerDescription": {
+          "Rotate": "Volume up / down",
+          "Touch": "Refresh",
+          "Push": "Mute · double-press power",
+          "LongTouch": "Refresh"
+        }
+      },
+      "States": [
+        {
+          "Image": "imgs/actions/volume/dial",
+          "TitleAlignment": "middle"
+        }
+      ]
+    },
+    {
+      "Name": "Source",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.source-toggle",
+      "Icon": "imgs/actions/source/icon",
+      "Tooltip": "Cycle through configured MusicCast inputs; icon reflects current source.",
+      "PropertyInspectorPath": "ui/source-toggle.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/source/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Play",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.play",
+      "Icon": "imgs/actions/play/icon",
+      "Tooltip": "Net/USB play. Does not control physical turntables/phono inputs.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/play/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Play/Pause",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.play-pause-toggle",
+      "Icon": "imgs/actions/play-pause/icon",
+      "Tooltip": "Toggle Net/USB play/pause. Does not control physical turntables/phono inputs.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/play-pause/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Stop",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.stop",
+      "Icon": "imgs/actions/stop/icon",
+      "Tooltip": "Net/USB stop. Does not control physical turntables/phono inputs.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/stop/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Previous",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.previous",
+      "Icon": "imgs/actions/previous/icon",
+      "Tooltip": "Net/USB previous track.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/previous/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Next",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.next",
+      "Icon": "imgs/actions/next/icon",
+      "Tooltip": "Net/USB next track.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/next/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Mute",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.mute-toggle",
+      "Icon": "imgs/actions/mute/icon",
+      "Tooltip": "Toggle mute on the selected zone.",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/mute/key",
+          "ShowTitle": false
+        }
+      ]
+    },
+    {
+      "Name": "Power",
+      "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.power-toggle",
+      "Icon": "imgs/actions/power/icon",
+      "Tooltip": "Power toggle (main/setPower?power=toggle).",
+      "PropertyInspectorPath": "ui/device-settings.html",
+      "Controllers": ["Keypad"],
+      "States": [
+        {
+          "Image": "imgs/actions/power/key",
+          "ShowTitle": false
+        }
+      ]
+    }
+  ],
+  "Category": "musiccast-unofficial",
+  "CategoryIcon": "imgs/plugin/category-icon",
+  "CodePath": "bin/plugin.js",
+  "Description": "Control Yamaha MusicCast devices on your LAN (volume dial, transport, mute, power).",
+  "Icon": "imgs/plugin/marketplace",
+  "SDKVersion": 3,
+  "Software": {
+    "MinimumVersion": "7.1"
+  },
+  "OS": [
+    {
+      "Platform": "mac",
+      "MinimumVersion": "12"
+    },
+    {
+      "Platform": "windows",
+      "MinimumVersion": "10"
+    }
+  ],
+  "Nodejs": {
+    "Version": "24",
+    "Debug": "enabled"
+  },
+  "UUID": "com.xander-dumaine-xanderxdumainecom.musiccast-unofficial"
+}

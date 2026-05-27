@@ -1,0 +1,26 @@
+# Dependencies
+node_modules/
+
+# Compiled plugin bundle (run `npm run build` in musiccast-unofficial/)
+**/*.sdPlugin/bin/
+
+# Stream Deck runtime logs
+**/*.sdPlugin/logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor (keep shared launch config under musiccast-unofficial/.vscode)
+.idea/
+
+# Local secrets / overrides
+.env
+.env.*
+
+# Large vendor PDFs (API notes are in docs/rough-docs.txt)
+*.pdf
+
+**/*/bin/
+**/*/logs/
