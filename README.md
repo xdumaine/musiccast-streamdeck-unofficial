@@ -35,16 +35,16 @@ For iterative work, run `npm run watch` to rebuild and restart the plugin on sav
 
 ## Actions
 
-| Action                                         | Control                                                                     |
-| ---------------------------------------------- | --------------------------------------------------------------------------- |
-| **Volume** (dial)                              | Rotate: volume steps · Push: mute · **Double-push**: power · Touch: refresh |
-| **Now Playing** (dial)                         | Shows `netusb/getPlayInfo`; push/touch/rotate refreshes                     |
-| **Album Art**                                  | Key image shows current `albumart_url`; press refreshes                     |
-| **Source Dial**                                | Rotate through configured inputs via `setInput`; push/touch refreshes       |
-| **Source**                                     | Key action that cycles configured inputs; icon reflects `getStatus.input`   |
-| **Play / Play-Pause / Stop / Previous / Next** | `netusb/setPlayback`; Play-Pause reads `netusb/getPlayInfo` first           |
-| **Mute**                                       | Toggle `setMute`                                                            |
-| **Power**                                      | `setPower?power=toggle`                                                     |
+| Action                                         | Control                                                                         |
+| ---------------------------------------------- | ------------------------------------------------------------------------------- |
+| **Volume** (dial)                              | Rotate: volume steps · Push: mute · **Double-push**: power · Touch: refresh     |
+| **Now Playing** (dial)                         | Rotate: previous/next · Push: play/pause · Touch: refresh · Shows `getPlayInfo` |
+| **Album Art**                                  | Key image shows current `albumart_url`; press refreshes                         |
+| **Source Dial**                                | Rotate through configured inputs via `setInput`; push/touch refreshes           |
+| **Source**                                     | Key action that cycles configured inputs; icon reflects `getStatus.input`       |
+| **Play / Play-Pause / Stop / Previous / Next** | `netusb/setPlayback`; Play-Pause reads `netusb/getPlayInfo` first               |
+| **Mute**                                       | Toggle `setMute`                                                                |
+| **Power**                                      | `setPower?power=toggle`                                                         |
 
 ### Volume dial options
 

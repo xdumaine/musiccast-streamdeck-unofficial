@@ -83,9 +83,9 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		this.settingsCache.merge(dial.id, ev.payload.settings);
 		await this.applyLayout(dial);
 		await dial.setTriggerDescription({
-			rotate: "Refresh now playing",
-			touch: "Refresh now playing",
-			push: "Refresh now playing",
+			rotate: "Previous / next track",
+			touch: "Play / pause",
+			push: "Play / pause",
 			longTouch: "Refresh now playing",
 		});
 		void this.hydrateSettings(dial);
@@ -119,11 +119,32 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		ev: DialRotateEvent<MusicCastDeviceSettings>
 	): Promise<void> {
 		if (!ev.action.isDial()) return;
-		const settings = this.settingsCache.merge(
-			ev.action.id,
-			ev.payload.settings
-		);
-		await this.refresh(ev.action, settings);
+		const ticks = ev.payload.ticks;
+		if (ticks === 0) return;
+
+		const dial = ev.action;
+		const settings = this.settingsCache.merge(dial.id, ev.payload.settings);
+		if (!normalizeHost(settings.host)) {
+			await this.showFeedback(
+				dial,
+				buildCurrentPlayingErrorFeedback(settings, "Set device IP")
+			);
+			return;
+		}
+
+		try {
+			const client = MusicCastClient.fromSettings(settings);
+			await client.setNetPlayback(ticks > 0 ? "next" : "previous");
+			await this.refresh(dial, settings);
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : String(e);
+			streamDeck.logger.error(`Now playing skip: ${msg}`);
+			await dial.showAlert();
+			await this.showFeedback(
+				dial,
+				buildCurrentPlayingErrorFeedback(settings, msg)
+			);
+		}
 	}
 
 	override async onDialUp(
@@ -134,7 +155,7 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 			ev.action.id,
 			ev.payload.settings
 		);
-		await this.refresh(ev.action, settings);
+		await this.togglePlayPause(ev.action, settings);
 	}
 
 	override async onTouchTap(
@@ -145,7 +166,36 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 			ev.action.id,
 			ev.payload.settings
 		);
-		await this.refresh(ev.action, settings);
+		await this.togglePlayPause(ev.action, settings);
+	}
+
+	private async togglePlayPause(
+		dial: DialAction<MusicCastDeviceSettings>,
+		settings: MusicCastDeviceSettings
+	): Promise<void> {
+		if (!normalizeHost(settings.host)) {
+			await this.showFeedback(
+				dial,
+				buildCurrentPlayingErrorFeedback(settings, "Set device IP")
+			);
+			return;
+		}
+
+		try {
+			const client = MusicCastClient.fromSettings(settings);
+			const info = await client.getNetPlayInfo();
+			const playback = (info.playback ?? "").toLowerCase();
+			await client.setNetPlayback(playback === "play" ? "pause" : "play");
+			await this.refresh(dial, settings);
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : String(e);
+			streamDeck.logger.error(`Now playing play/pause: ${msg}`);
+			await dial.showAlert();
+			await this.showFeedback(
+				dial,
+				buildCurrentPlayingErrorFeedback(settings, msg)
+			);
+		}
 	}
 
 	private async hydrateSettings(

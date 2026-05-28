@@ -36,9 +36,9 @@
 			"Encoder": {
 				"layout": "current-playing-dial.json",
 				"TriggerDescription": {
-					"Rotate": "Refresh now playing",
-					"Touch": "Refresh now playing",
-					"Push": "Refresh now playing",
+					"Rotate": "Previous / next track",
+					"Touch": "Play / pause",
+					"Push": "Play / pause",
 					"LongTouch": "Refresh now playing"
 				}
 			},
