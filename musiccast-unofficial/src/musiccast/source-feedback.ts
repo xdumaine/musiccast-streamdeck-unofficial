@@ -19,7 +19,8 @@ function sourcePosition(
 
 export function buildSourceFeedback(
 	settings: MusicCastDeviceSettings,
-	input: string | undefined
+	input: string | undefined,
+	opts?: { status?: string }
 ): FeedbackPayload {
 	const host = normalizeHost(settings.host);
 	const label = sourceLabel(input);
@@ -27,6 +28,7 @@ export function buildSourceFeedback(
 	return {
 		icon: {
 			value: sourceKeyImage(input, {
+				background: colors.background,
 				accent: colors.level,
 				foreground: colors.number,
 				muted: colors.subtitle,
@@ -34,9 +36,11 @@ export function buildSourceFeedback(
 		},
 		source: { value: label, color: colors.number },
 		sub: {
-			value: host
-				? `${sourcePosition(settings, input)} · ${host}`
-				: "Set device IP",
+			value:
+				opts?.status ??
+				(host
+					? `${sourcePosition(settings, input)} · ${host}`
+					: "Set device IP"),
 			color: colors.subtitle,
 		},
 	};
@@ -50,6 +54,7 @@ export function buildSourceErrorFeedback(
 	return {
 		icon: {
 			value: sourceKeyImage(undefined, {
+				background: colors.background,
 				accent: colors.error,
 				foreground: colors.error,
 				muted: colors.subtitle,

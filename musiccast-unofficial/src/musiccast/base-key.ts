@@ -19,7 +19,10 @@ const keySettingsCache = new MusicCastSettingsCache();
 export abstract class MusicCastKeyAction extends SingletonAction<MusicCastDeviceSettings> {
 	protected abstract label: string;
 	protected abstract icon: MusicCastKeyIcon;
-	private readonly activeKeys = new Map<string, KeyAction<MusicCastDeviceSettings>>();
+	private readonly activeKeys = new Map<
+		string,
+		KeyAction<MusicCastDeviceSettings>
+	>();
 	private readonly unsubscribeShared = onSharedSettingsChanged(() => {
 		for (const key of this.activeKeys.values()) void this.paintIcon(key);
 	});
@@ -37,7 +40,9 @@ export abstract class MusicCastKeyAction extends SingletonAction<MusicCastDevice
 		}
 	}
 
-	override onWillDisappear(ev: WillDisappearEvent<MusicCastDeviceSettings>): void {
+	override onWillDisappear(
+		ev: WillDisappearEvent<MusicCastDeviceSettings>
+	): void {
 		this.activeKeys.delete(ev.action.id);
 		keySettingsCache.delete(ev.action.id);
 	}
@@ -64,7 +69,11 @@ export abstract class MusicCastKeyAction extends SingletonAction<MusicCastDevice
 		}
 	}
 
-	private async paintIcon(key: KeyAction<MusicCastDeviceSettings>): Promise<void> {
-		await key.setImage(musicCastKeyImage(this.icon, keySettingsCache.get(key.id)));
+	private async paintIcon(
+		key: KeyAction<MusicCastDeviceSettings>
+	): Promise<void> {
+		await key.setImage(
+			musicCastKeyImage(this.icon, keySettingsCache.get(key.id))
+		);
 	}
 }

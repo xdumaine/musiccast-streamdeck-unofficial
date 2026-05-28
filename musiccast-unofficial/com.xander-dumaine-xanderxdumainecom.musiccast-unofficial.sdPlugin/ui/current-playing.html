@@ -2,7 +2,7 @@
 <html>
 
 <head lang="en">
-	<title>MusicCast device</title>
+	<title>MusicCast now playing</title>
 	<meta charset="utf-8" />
 	<script src="https://sdpi-components.dev/releases/v4/sdpi-components.js"></script>
 	<script src="shared-color-fields.js" defer></script>
@@ -15,14 +15,17 @@
 	<sdpi-item label="Zone (optional)">
 		<sdpi-textfield setting="zone" placeholder="main" default="main" global></sdpi-textfield>
 	</sdpi-item>
+	<sdpi-item label="Poll interval">
+		<sdpi-range setting="pollSeconds" min="5" max="120" step="1" default="10" showlabels="true"></sdpi-range>
+	</sdpi-item>
+	<sdpi-item label="Show album art">
+		<sdpi-checkbox setting="showAlbumArt" default="true"></sdpi-checkbox>
+	</sdpi-item>
 	<sdpi-item label="">
 		<details>
 			<summary>Shared colors</summary>
 			<sdpi-item label="Primary / accent">
 				<sdpi-color setting="colors.level" default="#5AC8FA" global></sdpi-color>
-			</sdpi-item>
-			<sdpi-item label="Muted">
-				<sdpi-color setting="colors.muted" default="#FF9F0A" global></sdpi-color>
 			</sdpi-item>
 			<sdpi-item label="Text">
 				<sdpi-color setting="colors.number" default="#FFFFFF" global></sdpi-color>
@@ -33,9 +36,6 @@
 			<sdpi-item label="Subtitle">
 				<sdpi-color setting="colors.subtitle" default="#8E8E93" global></sdpi-color>
 			</sdpi-item>
-			<sdpi-item label="Error / warning">
-				<sdpi-color setting="colors.error" default="#FF453A" global></sdpi-color>
-			</sdpi-item>
 			<sdpi-item label="Bar track (empty)">
 				<input data-global-color="barTrack" placeholder="transparent or #3A3A3C" style="width:100%;" />
 			</sdpi-item>
@@ -45,13 +45,8 @@
 		<details>
 			<summary>Help</summary>
 			<p style="font-size:12px;opacity:0.9;margin-top:8px;">
-				Use the fixed LAN address of your MusicCast device (port 80).
-				Device IP, zone, and shared colors apply across all MusicCast actions.
-				API base: <code>http://&lt;host&gt;/YamahaExtendedControl/v1/…</code>.
-				Zone is usually <strong>main</strong>; use <code>system/getLocationInfo</code> for multi-zone amps.
-				<strong>Note:</strong> Play, play/pause, stop, previous, and next send MusicCast <code>netusb/setPlayback</code>
-				commands. They work for network/USB/streaming sources, but they cannot start or stop a
-				physical turntable/phono input.
+				Displays <code>netusb/getPlayInfo</code> song/title, artist/album, progress, source, playback state, and album art when enabled and <code>albumart_url</code> is available.
+				Push, touch, or rotate the dial to refresh immediately.
 			</p>
 		</details>
 	</sdpi-item>

@@ -29,6 +29,7 @@ import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 const UUID =
 	"com.xander-dumaine-xanderxdumainecom.musiccast-unofficial.source-dial";
 const LAYOUT = "source-dial.json";
+const PREVIEW_REVERT_MS = 3_000;
 
 function nextSource(
 	settings: MusicCastDeviceSettings,
@@ -51,14 +52,22 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 	private readonly inFlight = new Set<string>();
 	private readonly settingsCache = new MusicCastSettingsCache();
 	private readonly inputCache = new Map<string, string>();
+	private readonly pendingInput = new Map<string, string>();
+	private readonly revertTimers = new Map<string, ReturnType<typeof setTimeout>>();
 	private readonly lastFeedback = new Map<string, FeedbackPayload>();
-	private readonly activeDials = new Map<string, DialAction<MusicCastDeviceSettings>>();
+	private readonly activeDials = new Map<
+		string,
+		DialAction<MusicCastDeviceSettings>
+	>();
 	private readonly unsubscribeShared = onSharedSettingsChanged(() => {
 		for (const dial of this.activeDials.values()) {
-			const input = this.inputCache.get(dial.id);
+			const pending = this.pendingInput.get(dial.id);
+			const input = pending ?? this.inputCache.get(dial.id);
 			void this.showFeedback(
 				dial,
-				buildSourceFeedback(this.settingsCache.get(dial.id), input)
+				buildSourceFeedback(this.settingsCache.get(dial.id), input, {
+					status: pending ? "Push to confirm" : undefined,
+				})
 			);
 		}
 	});
@@ -72,9 +81,9 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		this.settingsCache.merge(dial.id, ev.payload.settings);
 		await dial.setFeedbackLayout(LAYOUT);
 		await dial.setTriggerDescription({
-			rotate: "Previous / next source",
+			rotate: "Preview previous / next source",
 			touch: "Refresh source",
-			push: "Refresh source",
+			push: "Confirm source",
 			longTouch: "Refresh source",
 		});
 		void this.hydrateSettings(dial);
@@ -89,6 +98,8 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		this.inFlight.delete(id);
 		this.settingsCache.delete(id);
 		this.inputCache.delete(id);
+		this.pendingInput.delete(id);
+		this.clearRevert(id);
 		this.lastFeedback.delete(id);
 		this.activeDials.delete(id);
 	}
@@ -120,17 +131,22 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 
 		try {
 			const client = MusicCastClient.fromSettings(settings);
-			const current =
-				this.inputCache.get(dial.id) ??
-				(await client.getZoneStatus()).input?.toString();
+			let current = this.pendingInput.get(dial.id) ?? this.inputCache.get(dial.id);
+			if (!current) {
+				current = (await client.getZoneStatus()).input?.toString();
+				if (current) this.inputCache.set(dial.id, current);
+			}
 			const next = nextSource(
 				settings,
 				current,
 				ticks > 0 ? "next" : "previous"
 			);
-			this.inputCache.set(dial.id, next);
-			await this.showFeedback(dial, buildSourceFeedback(settings, next));
-			await client.setInput(next);
+			this.pendingInput.set(dial.id, next);
+			await this.showFeedback(
+				dial,
+				buildSourceFeedback(settings, next, { status: "Push to confirm" })
+			);
+			this.scheduleRevert(dial);
 		} catch (e) {
 			const msg = e instanceof Error ? e.message : String(e);
 			streamDeck.logger.error(`Source dial rotate: ${msg}`);
@@ -147,7 +163,25 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 			ev.action.id,
 			ev.payload.settings
 		);
-		await this.refresh(ev.action, settings);
+		const pending = this.pendingInput.get(ev.action.id);
+		if (!pending) {
+			await this.refresh(ev.action, settings);
+			return;
+		}
+
+		try {
+			this.clearRevert(ev.action.id);
+			const client = MusicCastClient.fromSettings(settings);
+			await client.setInput(pending);
+			this.pendingInput.delete(ev.action.id);
+			this.inputCache.set(ev.action.id, pending);
+			await this.showFeedback(ev.action, buildSourceFeedback(settings, pending));
+		} catch (e) {
+			const msg = e instanceof Error ? e.message : String(e);
+			streamDeck.logger.error(`Source dial confirm: ${msg}`);
+			await ev.action.showAlert();
+			await this.showFeedback(ev.action, buildSourceErrorFeedback(settings, msg));
+		}
 	}
 
 	override async onTouchTap(
@@ -158,6 +192,8 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 			ev.action.id,
 			ev.payload.settings
 		);
+		this.pendingInput.delete(ev.action.id);
+		this.clearRevert(ev.action.id);
 		await this.refresh(ev.action, settings);
 	}
 
@@ -196,10 +232,34 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		}
 	}
 
+	private clearRevert(actionId: string): void {
+		const timer = this.revertTimers.get(actionId);
+		if (!timer) return;
+		clearTimeout(timer);
+		this.revertTimers.delete(actionId);
+	}
+
+	private scheduleRevert(dial: DialAction<MusicCastDeviceSettings>): void {
+		this.clearRevert(dial.id);
+		const timer = setTimeout(() => {
+			this.revertTimers.delete(dial.id);
+			this.pendingInput.delete(dial.id);
+			void this.showFeedback(
+				dial,
+				buildSourceFeedback(
+					this.settingsCache.get(dial.id),
+					this.inputCache.get(dial.id)
+				)
+			);
+		}, PREVIEW_REVERT_MS);
+		this.revertTimers.set(dial.id, timer);
+	}
+
 	private async refresh(
 		dial: DialAction<MusicCastDeviceSettings>,
 		settings: MusicCastDeviceSettings
 	): Promise<void> {
+		if (this.pendingInput.has(dial.id)) return;
 		if (this.inFlight.has(dial.id)) return;
 		this.inFlight.add(dial.id);
 		try {

@@ -1,0 +1,44 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "current-playing-cover-dial",
+	"items": [
+		{
+			"key": "icon",
+			"type": "pixmap",
+			"rect": [4, 8, 84, 84],
+			"value": "",
+			"zOrder": 1
+		},
+		{
+			"key": "title",
+			"type": "text",
+			"rect": [94, 14, 102, 30],
+			"font": { "size": 12, "weight": 700 },
+			"alignment": "left",
+			"color": "#FFFFFF"
+		},
+		{
+			"key": "artist",
+			"type": "text",
+			"rect": [94, 42, 102, 18],
+			"font": { "size": 9, "weight": 500 },
+			"alignment": "left",
+			"color": "#8E8E93"
+		},
+		{
+			"key": "sub",
+			"type": "text",
+			"rect": [94, 60, 102, 14],
+			"font": { "size": 7, "weight": 600 },
+			"alignment": "left",
+			"color": "#5AC8FA"
+		},
+		{
+			"key": "progress",
+			"type": "pixmap",
+			"rect": [94, 78, 100, 8],
+			"value": "",
+			"zOrder": 2
+		}
+	]
+}

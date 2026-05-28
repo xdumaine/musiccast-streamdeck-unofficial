@@ -1,0 +1,13 @@
+{
+	"$schema": "https://schemas.elgato.com/streamdeck/plugins/layout.json",
+	"id": "current-playing-render-dial",
+	"items": [
+		{
+			"key": "display",
+			"type": "pixmap",
+			"rect": [0, 0, 200, 100],
+			"value": "",
+			"zOrder": 1
+		}
+	]
+}
