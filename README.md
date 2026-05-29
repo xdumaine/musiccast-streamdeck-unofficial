@@ -2,6 +2,12 @@
 
 Unofficial [Elgato Stream Deck](https://www.elgato.com/stream-deck) plugin for **Yamaha MusicCast** devices on your local network. Control volume, transport, mute, and power via the [Yamaha Extended Control (YXC) HTTP API](https://github.com/honnel/yamaha-commands).
 
+## Disclosure
+
+This is a 100% vibe coded side project. Photos are real physical photos edited with Gemini. No warranties are given.
+
+![MusicCast Stream Deck plugin screenshot](media/55ce1aa5-4a53-409c-b7e8-fefe4ce87357.jpg)
+
 > **Not affiliated with Yamaha or Elgato.** Use at your own risk. The MusicCast HTTP API has no authentication on most devices—only use on networks you trust.
 
 ## Requirements
