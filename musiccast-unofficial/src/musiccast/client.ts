@@ -42,6 +42,9 @@ export type NetPlayInfo = YxcResponse & {
 
 const REQUEST_TIMEOUT_MS = 6_000;
 
+/** Concurrent identical status reads (e.g. several dials polling one device) share a request. */
+const inFlightReads = new Map<string, Promise<YxcResponse>>();
+
 export class MusicCastClient {
 	readonly host: string;
 	readonly zone: string;
@@ -99,16 +102,25 @@ export class MusicCastClient {
 		return data;
 	}
 
+	private read(path: string): Promise<YxcResponse> {
+		const url = this.url(path);
+		const pending = inFlightReads.get(url);
+		if (pending) return pending;
+		const req = this.request(path).finally(() => inFlightReads.delete(url));
+		inFlightReads.set(url, req);
+		return req;
+	}
+
 	getZoneStatus(): Promise<ZoneStatus> {
-		return this.request(`${this.zone}/getStatus`) as Promise<ZoneStatus>;
+		return this.read(`${this.zone}/getStatus`) as Promise<ZoneStatus>;
 	}
 
 	getFeatures(): Promise<FeaturesResponse> {
-		return this.request("system/getFeatures") as Promise<FeaturesResponse>;
+		return this.read("system/getFeatures") as Promise<FeaturesResponse>;
 	}
 
 	getNetPlayInfo(): Promise<NetPlayInfo> {
-		return this.request("netusb/getPlayInfo") as Promise<NetPlayInfo>;
+		return this.read("netusb/getPlayInfo") as Promise<NetPlayInfo>;
 	}
 
 	setVolumeAbsolute(volume: number): Promise<YxcResponse> {

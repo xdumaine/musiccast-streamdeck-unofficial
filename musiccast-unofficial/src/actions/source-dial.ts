@@ -24,6 +24,7 @@ import {
 	buildSourceErrorFeedback,
 	buildSourceFeedback,
 } from "../musiccast/source-feedback.js";
+import { RenderCache } from "../musiccast/render-cache.js";
 import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 
 const UUID =
@@ -54,7 +55,7 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 	private readonly inputCache = new Map<string, string>();
 	private readonly pendingInput = new Map<string, string>();
 	private readonly revertTimers = new Map<string, ReturnType<typeof setTimeout>>();
-	private readonly lastFeedback = new Map<string, FeedbackPayload>();
+	private readonly rendered = new RenderCache();
 	private readonly activeDials = new Map<
 		string,
 		DialAction<MusicCastDeviceSettings>
@@ -86,7 +87,6 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 			push: "Confirm source",
 			longTouch: "Refresh source",
 		});
-		void this.hydrateSettings(dial);
 		this.startPoll(dial);
 	}
 
@@ -100,7 +100,7 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		this.inputCache.delete(id);
 		this.pendingInput.delete(id);
 		this.clearRevert(id);
-		this.lastFeedback.delete(id);
+		this.rendered.delete(id);
 		this.activeDials.delete(id);
 	}
 
@@ -108,8 +108,18 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		ev: DidReceiveSettingsEvent<MusicCastDeviceSettings>
 	): void {
 		if (!ev.action.isDial()) return;
-		this.settingsCache.merge(ev.action.id, ev.payload.settings);
-		this.startPoll(ev.action);
+		const prevSec = clampPollSeconds(
+			this.settingsCache.get(ev.action.id).pollSeconds
+		);
+		const settings = this.settingsCache.merge(
+			ev.action.id,
+			ev.payload.settings
+		);
+		if (clampPollSeconds(settings.pollSeconds) !== prevSec) {
+			this.startPoll(ev.action);
+		} else {
+			void this.refresh(ev.action, settings);
+		}
 	}
 
 	override async onDialRotate(
@@ -197,31 +207,14 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		await this.refresh(ev.action, settings);
 	}
 
-	private async hydrateSettings(
-		dial: DialAction<MusicCastDeviceSettings>
-	): Promise<void> {
-		try {
-			const fromSd = await dial.getSettings();
-			this.settingsCache.merge(dial.id, fromSd);
-		} catch (e) {
-			const msg = e instanceof Error ? e.message : String(e);
-			streamDeck.logger.warn(`Source dial getSettings failed: ${msg}`);
-		}
-	}
-
 	private startPoll(dial: DialAction<MusicCastDeviceSettings>): void {
 		this.stopPoll(dial.id);
-		const cached = this.lastFeedback.get(dial.id);
-		if (cached) void dial.setFeedback(cached);
-
 		void this.refresh(dial, this.settingsCache.get(dial.id));
-		void this.hydrateSettings(dial).then(() => {
-			const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
-			const timer = setInterval(() => {
-				void this.refresh(dial, this.settingsCache.get(dial.id));
-			}, sec * 1000);
-			this.timers.set(dial.id, timer);
-		});
+		const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
+		const timer = setInterval(() => {
+			void this.refresh(dial, this.settingsCache.get(dial.id));
+		}, sec * 1000);
+		this.timers.set(dial.id, timer);
 	}
 
 	private stopPoll(actionId: string): void {
@@ -288,7 +281,7 @@ export class SourceDial extends SingletonAction<MusicCastDeviceSettings> {
 		dial: DialAction<MusicCastDeviceSettings>,
 		feedback: FeedbackPayload
 	): Promise<void> {
-		this.lastFeedback.set(dial.id, feedback);
+		if (!this.rendered.changed(dial.id, feedback)) return;
 		await dial.setFeedback(feedback);
 	}
 }

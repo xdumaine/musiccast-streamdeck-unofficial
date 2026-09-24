@@ -20,6 +20,7 @@ import {
 	type MusicCastDeviceSettings,
 	volumeDialLayoutFile,
 } from "../musiccast/settings.js";
+import { RenderCache } from "../musiccast/render-cache.js";
 import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 import {
 	buildErrorFeedback,
@@ -33,6 +34,8 @@ const DEFAULT_MAX_VOLUME = 100;
 const SETTINGS_DEBOUNCE_MS = 500;
 /** Coalesce rapid getStatus syncs after dial rotation (display updates instantly). */
 const SYNC_DEBOUNCE_MS = 120;
+/** Tolerance so a poll tick isn't skipped just because the last fetch ended a bit late. */
+const POLL_SLACK_MS = 1_000;
 /** Max gap between dial pushes to count as double-press (power toggle). */
 const DOUBLE_PRESS_MS = 400;
 
@@ -55,8 +58,7 @@ type RefreshOpts = {
 export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 	private readonly timers = new Map<string, ReturnType<typeof setInterval>>();
 	private readonly inFlight = new Set<string>();
-	private readonly pollGeneration = new Map<string, number>();
-	private readonly lastFeedback = new Map<string, FeedbackPayload>();
+	private readonly rendered = new RenderCache();
 	private readonly maxVolumeByAction = new Map<string, number>();
 	private readonly lastFetchEndMs = new Map<string, number>();
 	private readonly settingsCache = new MusicCastSettingsCache();
@@ -101,7 +103,6 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 			push: "Mute · double-press power",
 			longTouch: "Refresh volume",
 		});
-		void this.hydrateSettings(dial);
 		this.startPoll(dial);
 	}
 
@@ -112,8 +113,7 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 		this.stopPoll(id);
 		this.clearDebounce(id);
 		this.inFlight.delete(id);
-		this.pollGeneration.delete(id);
-		this.lastFeedback.delete(id);
+		this.rendered.delete(id);
 		this.maxVolumeByAction.delete(id);
 		this.lastFetchEndMs.delete(id);
 		this.settingsCache.delete(id);
@@ -362,20 +362,8 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 		const layout = volumeDialLayoutFile(settings);
 		if (this.layoutByAction.get(dial.id) === layout) return;
 		this.layoutByAction.set(dial.id, layout);
-		this.lastFeedback.delete(dial.id);
+		this.rendered.delete(dial.id);
 		await dial.setFeedbackLayout(layout);
-	}
-
-	private async hydrateSettings(
-		dial: DialAction<MusicCastDeviceSettings>
-	): Promise<void> {
-		try {
-			const fromSd = await dial.getSettings();
-			this.settingsCache.merge(dial.id, fromSd);
-		} catch (e) {
-			const msg = e instanceof Error ? e.message : String(e);
-			streamDeck.logger.warn(`getSettings failed: ${msg}`);
-		}
 	}
 
 	private enqueueVolumeStep(
@@ -412,34 +400,18 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 
 	private startPoll(dial: DialAction<MusicCastDeviceSettings>): void {
 		this.stopPoll(dial.id);
-		const gen = (this.pollGeneration.get(dial.id) ?? 0) + 1;
-		this.pollGeneration.set(dial.id, gen);
-
-		const cached = this.lastFeedback.get(dial.id);
-		if (cached) {
-			void dial.setFeedback(cached);
-		}
 		void this.refresh(dial, {
 			settings: this.settingsCache.get(dial.id),
 			immediate: true,
 		});
-
-		void this.hydrateSettings(dial).then(() => {
-			if (this.pollGeneration.get(dial.id) !== gen) return;
-			const settings = this.settingsCache.get(dial.id);
-			const sec = clampPollSeconds(settings.pollSeconds);
-			const id = setInterval(() => {
-				void this.refresh(dial, {
-					settings: this.settingsCache.get(dial.id),
-					poll: true,
-				});
-			}, sec * 1000);
-			if (this.pollGeneration.get(dial.id) !== gen) {
-				clearInterval(id);
-				return;
-			}
-			this.timers.set(dial.id, id);
-		});
+		const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
+		const id = setInterval(() => {
+			void this.refresh(dial, {
+				settings: this.settingsCache.get(dial.id),
+				poll: true,
+			});
+		}, sec * 1000);
+		this.timers.set(dial.id, id);
 	}
 
 	private async refresh(
@@ -452,7 +424,9 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 		if (poll && !immediate) {
 			const last = this.lastFetchEndMs.get(dial.id) ?? 0;
 			const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
-			if (last > 0 && Date.now() - last < sec * 1000) return;
+			// Skip only when a user action fetched recently; slack keeps the
+			// interval tick itself from being skipped every other time.
+			if (last > 0 && Date.now() - last < sec * 1000 - POLL_SLACK_MS) return;
 		}
 
 		if (this.inFlight.has(dial.id)) {
@@ -464,8 +438,6 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 		try {
 			if (opts?.settings) {
 				this.settingsCache.merge(dial.id, opts.settings);
-			} else if (!normalizeHost(this.settingsCache.get(dial.id).host)) {
-				await this.hydrateSettings(dial);
 			}
 
 			const settings = this.settingsCache.get(dial.id);
@@ -527,7 +499,7 @@ export class VolumeDial extends SingletonAction<MusicCastDeviceSettings> {
 		dial: DialAction<MusicCastDeviceSettings>,
 		fb: FeedbackPayload
 	): Promise<void> {
-		this.lastFeedback.set(actionId, fb);
+		if (!this.rendered.changed(actionId, fb)) return;
 		await dial.setFeedback(fb);
 	}
 

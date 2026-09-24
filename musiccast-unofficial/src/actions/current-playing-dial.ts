@@ -27,6 +27,7 @@ import {
 	normalizeHost,
 	type MusicCastDeviceSettings,
 } from "../musiccast/settings.js";
+import { RenderCache, rememberAlbumArt } from "../musiccast/render-cache.js";
 import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 
 const UUID =
@@ -43,7 +44,7 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 	private readonly infoCache = new Map<string, NetPlayInfo>();
 	private readonly albumArtByAction = new Map<string, string | undefined>();
 	private readonly albumArtByUrl = new Map<string, string>();
-	private readonly lastFeedback = new Map<string, FeedbackPayload>();
+	private readonly rendered = new RenderCache();
 	private readonly powerOnByAction = new Map<string, boolean>();
 	private readonly settingsDebounce = new Map<
 		string,
@@ -88,7 +89,6 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 			push: "Play / pause",
 			longTouch: "Refresh now playing",
 		});
-		void this.hydrateSettings(dial);
 		this.startPoll(dial);
 	}
 
@@ -101,7 +101,7 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		this.settingsCache.delete(id);
 		this.infoCache.delete(id);
 		this.albumArtByAction.delete(id);
-		this.lastFeedback.delete(id);
+		this.rendered.delete(id);
 		this.powerOnByAction.delete(id);
 		this.clearSettingsDebounce(id);
 		this.activeDials.delete(id);
@@ -198,18 +198,6 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		}
 	}
 
-	private async hydrateSettings(
-		dial: DialAction<MusicCastDeviceSettings>
-	): Promise<void> {
-		try {
-			const fromSd = await dial.getSettings();
-			this.settingsCache.merge(dial.id, fromSd);
-		} catch (e) {
-			const msg = e instanceof Error ? e.message : String(e);
-			streamDeck.logger.warn(`Now playing getSettings failed: ${msg}`);
-		}
-	}
-
 	private clearSettingsDebounce(actionId: string): void {
 		const timer = this.settingsDebounce.get(actionId);
 		if (!timer) return;
@@ -229,13 +217,11 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 	private startPoll(dial: DialAction<MusicCastDeviceSettings>): void {
 		this.stopPoll(dial.id);
 		void this.refresh(dial, this.settingsCache.get(dial.id));
-		void this.hydrateSettings(dial).then(() => {
-			const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
-			const timer = setInterval(() => {
-				void this.refresh(dial, this.settingsCache.get(dial.id));
-			}, sec * 1000);
-			this.timers.set(dial.id, timer);
-		});
+		const sec = clampPollSeconds(this.settingsCache.get(dial.id).pollSeconds);
+		const timer = setInterval(() => {
+			void this.refresh(dial, this.settingsCache.get(dial.id));
+		}, sec * 1000);
+		this.timers.set(dial.id, timer);
 	}
 
 	private stopPoll(actionId: string): void {
@@ -319,9 +305,7 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		dial: DialAction<MusicCastDeviceSettings>,
 		feedback: FeedbackPayload
 	): Promise<void> {
-		const prev = this.lastFeedback.get(dial.id);
-		if (prev && feedbackPayloadEqual(prev, feedback)) return;
-		this.lastFeedback.set(dial.id, feedback);
+		if (!this.rendered.changed(dial.id, feedback)) return;
 		await dial.setFeedback(feedback);
 	}
 
@@ -367,7 +351,7 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 			const bytes = Buffer.from(await res.arrayBuffer());
 			const contentType = res.headers.get("content-type") ?? "image/jpeg";
 			const dataUri = `data:${contentType};base64,${bytes.toString("base64")}`;
-			this.albumArtByUrl.set(url, dataUri);
+			rememberAlbumArt(this.albumArtByUrl, url, dataUri);
 			return dataUri;
 		} catch (e) {
 			const msg = e instanceof Error ? e.message : String(e);
@@ -390,8 +374,4 @@ export class CurrentPlayingDial extends SingletonAction<MusicCastDeviceSettings>
 		if (!raw) return undefined;
 		return this.albumArtUrl(client, raw);
 	}
-}
-
-function feedbackPayloadEqual(a: FeedbackPayload, b: FeedbackPayload): boolean {
-	return JSON.stringify(a) === JSON.stringify(b);
 }

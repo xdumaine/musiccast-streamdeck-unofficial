@@ -17,6 +17,7 @@ import {
 	normalizeHost,
 	type MusicCastDeviceSettings,
 } from "../musiccast/settings.js";
+import { RenderCache, rememberAlbumArt } from "../musiccast/render-cache.js";
 import { onSharedSettingsChanged } from "../musiccast/shared-settings.js";
 import { sourceKeyImage } from "../musiccast/source-icon.js";
 import { resolveVolumeColors } from "../musiccast/volume-colors.js";
@@ -52,6 +53,7 @@ export class AlbumArtKey extends SingletonAction<MusicCastDeviceSettings> {
 	private readonly artByUrl = new Map<string, string>();
 	private readonly inputByAction = new Map<string, string | undefined>();
 	private readonly activeKeys = new Map<string, KeyAction<MusicCastDeviceSettings>>();
+	private readonly rendered = new RenderCache();
 	private readonly unsubscribeShared = onSharedSettingsChanged(() => {
 		for (const key of this.activeKeys.values()) {
 			void this.paint(key, this.settingsCache.get(key.id));
@@ -80,15 +82,24 @@ export class AlbumArtKey extends SingletonAction<MusicCastDeviceSettings> {
 		this.artByAction.delete(id);
 		this.inputByAction.delete(id);
 		this.activeKeys.delete(id);
+		this.rendered.delete(id);
 	}
 
 	override onDidReceiveSettings(
 		ev: DidReceiveSettingsEvent<MusicCastDeviceSettings>
 	): void {
 		if (!ev.action.isKey()) return;
-		this.settingsCache.merge(ev.action.id, ev.payload.settings);
-		this.startPoll(ev.action);
-		void this.refresh(ev.action, this.settingsCache.get(ev.action.id));
+		const prevSec = clampPollSeconds(
+			this.settingsCache.get(ev.action.id).pollSeconds
+		);
+		const settings = this.settingsCache.merge(
+			ev.action.id,
+			ev.payload.settings
+		);
+		if (clampPollSeconds(settings.pollSeconds) !== prevSec) {
+			this.startPoll(ev.action);
+		}
+		void this.refresh(ev.action, settings);
 	}
 
 	override async onKeyDown(
@@ -148,20 +159,17 @@ export class AlbumArtKey extends SingletonAction<MusicCastDeviceSettings> {
 		settings: MusicCastDeviceSettings
 	): Promise<void> {
 		const art = this.artByAction.get(key.id);
-		if (art) {
-			await key.setImage(coverKeyImage(art));
-			await key.setTitle("");
-			return;
-		}
 		const colors = resolveVolumeColors(settings);
-		await key.setImage(
-			sourceKeyImage(this.inputByAction.get(key.id), {
-				background: colors.background,
-				accent: colors.level,
-				foreground: colors.number,
-				muted: colors.subtitle,
-			})
-		);
+		const image = art
+			? coverKeyImage(art)
+			: sourceKeyImage(this.inputByAction.get(key.id), {
+					background: colors.background,
+					accent: colors.level,
+					foreground: colors.number,
+					muted: colors.subtitle,
+			  });
+		if (!this.rendered.changed(key.id, image)) return;
+		await key.setImage(image);
 		await key.setTitle("");
 	}
 
@@ -180,7 +188,7 @@ export class AlbumArtKey extends SingletonAction<MusicCastDeviceSettings> {
 		const bytes = Buffer.from(await res.arrayBuffer());
 		const contentType = res.headers.get("content-type") ?? "image/jpeg";
 		const dataUri = `data:${contentType};base64,${bytes.toString("base64")}`;
-		this.artByUrl.set(url, dataUri);
+		rememberAlbumArt(this.artByUrl, url, dataUri);
 		return dataUri;
 	}
 
